@@ -17,7 +17,12 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-secondary p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center gap-10 from-background p-4">
+      <div className="flex flex-col items-center justify-center">
+        <a href="/" className="text-4xl font-bold">
+          Multiplayer Canvas
+        </a>
+      </div>
       <Card className="w-full max-w-md p-8">
         <div className="flex flex-col items-center space-y-6">
           <div className="flex items-center space-x-2">

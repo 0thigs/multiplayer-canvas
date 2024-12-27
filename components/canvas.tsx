@@ -3,13 +3,14 @@
 import { useEffect, useRef } from "react";
 
 interface CanvasProps {
+  id: string;
   color: string;
   tool: "brush" | "eraser";
   lineWidth: number;
   roomId: string;
 }
 
-export function Canvas({ color, tool, lineWidth, roomId }: CanvasProps) {
+export function Canvas({ id, color, tool, lineWidth, roomId }: CanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawing = useRef(false);
   const lastX = useRef(0);
@@ -67,6 +68,7 @@ export function Canvas({ color, tool, lineWidth, roomId }: CanvasProps) {
   return (
     <div className="flex justify-center">
       <canvas
+        id={id}
         ref={canvasRef}
         className="border rounded-lg shadow-lg bg-white"
       />

@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background flex justify-center items-center to-secondary">
+    <div className="min-h-screen from-background flex flex-col justify-center items-center to-secondary">
       <div className="container mx-auto px-4 py-16">
         <div className="flex flex-col items-center text-center space-y-8">
           <div className="flex items-center justify-center space-x-2">
@@ -47,6 +47,19 @@ export default function Home() {
           </div>
         </div>
       </div>
+      <footer className="flex justify-center items-center fixed bottom-0 pb-8">
+        <p className="text-muted-foreground">
+          &copy; {new Date().getFullYear()} Multiplayer Canvas made by{" "}
+          <a
+            href="https://github.com/0Thigs"
+            className="text-white"
+            target="_blank"
+          >
+            0Thigs
+          </a>
+          . All rights reserved.
+        </p>
+      </footer>
     </div>
   );
 }

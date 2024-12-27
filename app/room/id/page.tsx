@@ -11,6 +11,15 @@ export default function RoomPage({ params }: { params: { id: string } }) {
   const [tool, setTool] = useState<"brush" | "eraser">("brush");
   const [lineWidth, setLineWidth] = useState(5);
 
+  function download() {
+    const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+    const url = canvas?.toDataURL("image/png");
+    const link = document.createElement("a");
+    link.download = "filename.png";
+    link.href = url;
+    link.click();
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b">
@@ -43,7 +52,7 @@ export default function RoomPage({ params }: { params: { id: string } }) {
             </div>
 
             <div className="flex items-center space-x-4">
-              <Button variant="outline" size="icon">
+              <Button variant="outline" size="icon" onClick={download}>
                 <Download className="h-5 w-5" />
               </Button>
               <Button variant="outline">
@@ -57,6 +66,7 @@ export default function RoomPage({ params }: { params: { id: string } }) {
 
       <main className="container mx-auto px-4 py-8">
         <Canvas
+          id="canvas"
           color={color}
           tool={tool}
           lineWidth={lineWidth}
