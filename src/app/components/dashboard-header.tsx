@@ -9,8 +9,11 @@ import {
 } from "components/ui/dropdown-menu";
 import { User } from "lucide-react";
 import Link from "next/link";
+import useAuth from "hooks/use-auth";
 
 export function DashboardHeader() {
+  const { logout } = useAuth();
+
   return (
     <header className="border-b">
       <div className="container mx-auto px-4 py-4">
@@ -28,9 +31,18 @@ export function DashboardHeader() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem asChild>
-                  <Link href="/dashboard/profile">Profile</Link>
+                  <Link
+                    className="cursor-pointer w-full"
+                    href="/dashboard/profile"
+                  >
+                    Profile
+                  </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>Logout</DropdownMenuItem>
+                <DropdownMenuItem>
+                  <p className="cursor-pointer w-full" onClick={logout}>
+                    Logout
+                  </p>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
