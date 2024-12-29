@@ -6,13 +6,42 @@ import { Input } from "components/ui/input";
 import { Label } from "components/ui/label";
 import { DashboardHeader } from "components/dashboard-header";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function CreateRoomPage() {
   const [roomName, setRoomName] = useState("");
   const [description, setDescription] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/rooms/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name: roomName, description }),
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Erro ao criar sala.");
+      }
+
+      const data = await response.json();
+      router.push("/dashboard");
+    } catch (err: any) {
+      setError(err.message || "Erro ao criar sala.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -44,9 +73,11 @@ export default function CreateRoomPage() {
               />
             </div>
 
-            <Button type="submit" className="w-full">
-              Create Room
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Creating..." : "Create Room"}
             </Button>
+
+            {error && <p className="text-red-500">{error}</p>}
           </form>
         </Card>
       </main>
