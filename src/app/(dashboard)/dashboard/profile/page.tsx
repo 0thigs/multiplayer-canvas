@@ -8,6 +8,8 @@ import { DashboardHeader } from "components/dashboard-header";
 import { Avatar, AvatarFallback, AvatarImage } from "components/ui/avatar";
 import { useEffect, useState } from "react";
 import useAuth from "@/app/hooks/use-auth";
+import Link from "next/link";
+import { ArrowLeftIcon } from "lucide-react";
 
 export default function ProfilePage() {
   const { logout } = useAuth();
@@ -42,6 +44,11 @@ export default function ProfilePage() {
       <DashboardHeader />
       <main className="container mx-auto px-4 py-8">
         <Card className="max-w-2xl mx-auto p-8">
+          <div className="flex justify-between items-center">
+            <Link href="/dashboard">
+              <ArrowLeftIcon className="w-6 h-6" />
+            </Link>
+          </div>
           <div className="flex flex-col items-center mb-8">
             <Avatar className="h-24 w-24 mb-4">
               <AvatarImage src="https://github.com/shadcn.png" />
