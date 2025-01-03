@@ -21,6 +21,10 @@ export const RoomCard: React.FC<RoomCardProps> = ({
 }) => {
   const router = useRouter();
 
+  const joinRoom = () => {
+    router.push(`/room/${roomId}`);
+  }
+
   const deleteRoom = async () => {
     const confirmed = window.confirm("Are you sure you want to delete this room?");
     
@@ -62,8 +66,8 @@ export const RoomCard: React.FC<RoomCardProps> = ({
         Active participants: {participants}
       </p>
       <div className="flex flex-row gap-2">
-        <Button className="w-full">
-          <Link href={`/room/${roomId}`}>Join Room</Link>
+        <Button onClick={joinRoom} className="w-full">
+          <p>Join Room</p>
         </Button>
         <Button
           onClick={deleteRoom}
