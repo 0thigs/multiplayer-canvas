@@ -2,14 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Button } from "components/ui/button";
-import { Brush, Eraser, Download, Users } from "lucide-react";
+import { Brush, Eraser, Download, Users, CornerDownLeft } from "lucide-react";
 import { Canvas } from "components/canvas";
 import { ColorPicker } from "components/color-picker";
+import { useRouter } from "next/navigation";
 
 export default function RoomPage({ params }: { params: { id: string } }) {
   const [color, setColor] = useState("#000000");
   const [tool, setTool] = useState<"brush" | "eraser">("brush");
   const [lineWidth, setLineWidth] = useState(5);
+  const router = useRouter();
 
   function download() {
     const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -18,6 +20,10 @@ export default function RoomPage({ params }: { params: { id: string } }) {
     link.download = "filename.png";
     link.href = url;
     link.click();
+  }
+
+  const leaveRoom = () => {
+    router.push("/dashboard");
   }
 
   return (
@@ -52,6 +58,9 @@ export default function RoomPage({ params }: { params: { id: string } }) {
             </div>
 
             <div className="flex items-center space-x-4">
+              <Button variant="outline" size="icon" onClick={leaveRoom}>
+                <CornerDownLeft className="h-5 w-5" />
+              </Button>
               <Button variant="outline" size="icon" onClick={download}>
                 <Download className="h-5 w-5" />
               </Button>
