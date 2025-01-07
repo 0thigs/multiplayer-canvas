@@ -9,10 +9,14 @@ export async function middleware(request: NextRequest) {
         .find(row => row.startsWith('sb-access-token='))
         ?.split('=')[1];
 
+    console.log('Middleware - Token extraído:', token);
+
     let isLoggedIn = false;
 
     if (token) {
         const { data, error } = await supabase.auth.getUser(token);
+        console.log('Middleware - Dados do usuário:', data);
+        console.log('Middleware - Erro ao obter usuário:', error);
         if (data.user) {
             isLoggedIn = true;
         }
@@ -20,14 +24,19 @@ export async function middleware(request: NextRequest) {
 
     const { pathname } = request.nextUrl;
 
+    console.log(`Middleware - Verificando pathname: ${pathname}`);
+    console.log(`Middleware - Usuário está logado: ${isLoggedIn}`);
+
     if (pathname.startsWith('/dashboard') || pathname.startsWith('/api/rooms')) {
         if (!isLoggedIn) {
+            console.log('Middleware - Redirecionando para /login');
             return NextResponse.redirect(new URL('/login', request.url));
         }
     }
 
     if (pathname.startsWith('/login') || pathname.startsWith('/register')) {
         if (isLoggedIn) {
+            console.log('Middleware - Redirecionando para /dashboard');
             return NextResponse.redirect(new URL('/dashboard', request.url));
         }
     }
