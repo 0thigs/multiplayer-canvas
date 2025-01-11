@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     const cookieHeader = req.headers.get('cookie') || '';
     const token = cookieHeader
       .split('; ')
-      .find(row => row.startsWith('sb-access-token='))
+      .find((row: string) => row.startsWith('sb-access-token='))
       ?.split('=')[1];
 
     if (!token) {
