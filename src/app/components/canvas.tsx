@@ -118,33 +118,59 @@ export const Canvas = forwardRef<CanvasHandle, CanvasProps>(
     const saveCanvasState = async () => {
       try {
         const canvas = canvasRef.current;
-        if (!canvas) return;
+        if (!canvas) {
+          console.error('Canvas reference is null');
+          return;
+        }
 
-        const { data: { session } } = await supabase.auth.getSession();
+        if (!roomId) {
+          console.error('Room ID is missing');
+          return;
+        }
+
+        const { data, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('Error getting session:', sessionError);
+          return;
+        }
+
+        const session = data.session;
         if (!session) {
-          console.error('Sessão não encontrada');
+          console.error('No active session found');
           return;
         }
 
         const canvasState = canvas.toDataURL();
-        const response = await fetch('/api/rooms/update-canvas', {
+        
+        if (!canvasState || canvasState.length < 10) {
+          console.error('Invalid canvas state', canvasState);
+          return;
+        }
+
+        const response = await fetch(`/api/rooms/${roomId}/update-canvas`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`,
           },
-          credentials: 'include',
           body: JSON.stringify({
             roomId,
             canvasState,
           }),
         });
-
         if (!response.ok) {
-          throw new Error('Erro ao salvar estado do canvas');
+          const errorBody = await response.text();
+          console.error('Failed to save canvas state:', {
+            status: response.status,
+            statusText: response.statusText,
+            body: errorBody
+          });
+          return;
         }
+
+        console.log('Canvas state saved successfully');
       } catch (error) {
-        console.error('Erro ao salvar estado do canvas:', error);
+        console.error('Unexpected error in saveCanvasState:', error);
       }
     };
 

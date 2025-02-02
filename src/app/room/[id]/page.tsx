@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import { Button } from "components/ui/button";
 import {
   Brush,
@@ -14,10 +14,16 @@ import {
 import { Canvas, CanvasHandle } from "components/canvas";
 import { ColorPicker } from "components/color-picker";
 import { useRouter } from "next/navigation";
-import { supabase } from "../../../server/supabase-client"; 
-import { User } from "@supabase/supabase-js";
+import { supabase } from "../../../server/supabase-client";
+import type { User } from "@supabase/supabase-js";
 
-export default function RoomPage({ params }: { params: { id: string } }) {
+interface RoomPageProps {
+  params: {
+    id: string;
+  };
+}
+
+export default function RoomPage({ params }: RoomPageProps) {
   const [color, setColor] = useState("#000000");
   const [tool, setTool] = useState<"brush" | "eraser">("brush");
   const [lineWidth, setLineWidth] = useState(5);
@@ -26,6 +32,8 @@ export default function RoomPage({ params }: { params: { id: string } }) {
   const canvasRef = useRef<CanvasHandle>(null);
 
   const [shareMessage, setShareMessage] = useState(false);
+  const [saveMessage, setSaveMessage] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const roomId = params.id;
 
@@ -38,6 +46,42 @@ export default function RoomPage({ params }: { params: { id: string } }) {
     return data.user;
   };
 
+  const saveCanvasState = useCallback(async () => {
+    if (canvasRef.current) {
+      const canvas = canvasRef.current.getCanvas();
+      if (!canvas) {
+        console.error("Canvas não encontrado.");
+        return;
+      }
+      const canvasDataUrl = canvas.toDataURL("image/png");
+
+      try {
+        const response = await fetch(`/api/rooms/${roomId}/update-canvas`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            canvasState: canvasDataUrl,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Erro ao salvar o estado do canvas:", errorData);
+          setErrorMessage("Erro ao salvar o estado do canvas.");
+        } else {
+          console.log("Estado do canvas salvo com sucesso.");
+          setSaveMessage(true);
+          setTimeout(() => setSaveMessage(false), 2000);
+        }
+      } catch (error) {
+        console.error("Erro na requisição para salvar o canvas:", error);
+        setErrorMessage("Erro na requisição para salvar o canvas.");
+      }
+    }
+  }, [roomId]);
+
   useEffect(() => {
     const joinRoom = async () => {
       const user = await getCurrentUser();
@@ -48,6 +92,7 @@ export default function RoomPage({ params }: { params: { id: string } }) {
 
         if (error) {
           console.error("Erro ao entrar na sala:", error);
+          setErrorMessage("Erro ao entrar na sala.");
         } else {
           console.log(`Usuário ${user.id} entrou na sala ${roomId}`);
         }
@@ -65,6 +110,7 @@ export default function RoomPage({ params }: { params: { id: string } }) {
 
         if (error) {
           console.error("Erro ao sair da sala:", error);
+          setErrorMessage("Erro ao sair da sala.");
         } else {
           console.log(`Usuário ${user.id} saiu da sala ${roomId}`);
         }
@@ -75,8 +121,9 @@ export default function RoomPage({ params }: { params: { id: string } }) {
 
     return () => {
       leaveRoom();
+      saveCanvasState(); // Salva o estado do canvas ao desmontar o componente
     };
-  }, [roomId]);
+  }, [roomId, saveCanvasState]);
 
   useEffect(() => {
     const fetchCanvasState = async () => {
@@ -88,6 +135,7 @@ export default function RoomPage({ params }: { params: { id: string } }) {
 
       if (error) {
         console.error("Erro ao buscar estado do canvas:", error);
+        setErrorMessage("Erro ao buscar estado do canvas.");
         return;
       }
 
@@ -107,16 +155,31 @@ export default function RoomPage({ params }: { params: { id: string } }) {
     fetchCanvasState();
   }, [roomId]);
 
-  function download() {
+  // Autosave a cada 60 segundos
+  useEffect(() => {
+    const interval = setInterval(() => {
+      saveCanvasState();
+    }, 60000); // 60.000 ms = 60 segundos
+
+    return () => clearInterval(interval);
+  }, [saveCanvasState]);
+
+  const download = () => {
     const canvas = document.getElementById("canvas") as HTMLCanvasElement;
-    const url = canvas?.toDataURL("image/png");
+    if (!canvas) {
+      console.error("Canvas não encontrado para download.");
+      setErrorMessage("Canvas não encontrado para download.");
+      return;
+    }
+    const url = canvas.toDataURL("image/png");
     const link = document.createElement("a");
     link.download = "drawing.png";
     link.href = url;
     link.click();
-  }
+  };
 
   const leaveRoomHandler = () => {
+    saveCanvasState(); // Salva o estado antes de sair
     router.push("/dashboard");
   };
 
@@ -126,6 +189,7 @@ export default function RoomPage({ params }: { params: { id: string } }) {
 
   const handleClear = () => {
     canvasRef.current?.clear();
+    saveCanvasState(); // Salva o estado após limpar o canvas
   };
 
   const handleShare = () => {
@@ -138,6 +202,7 @@ export default function RoomPage({ params }: { params: { id: string } }) {
       })
       .catch((err) => {
         console.error("Erro ao copiar o link: ", err);
+        setErrorMessage("Erro ao copiar o link.");
       });
   };
 
@@ -236,6 +301,18 @@ export default function RoomPage({ params }: { params: { id: string } }) {
       {shareMessage && (
         <div className="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow-lg animate-fade-in-out">
           Link copiado para o clipboard!
+        </div>
+      )}
+
+      {saveMessage && (
+        <div className="fixed bottom-4 left-4 bg-blue-500 text-white px-4 py-2 rounded shadow-lg animate-fade-in-out">
+          Estado do canvas salvo!
+        </div>
+      )}
+
+      {errorMessage && (
+        <div className="fixed bottom-4 left-4 bg-red-500 text-white px-4 py-2 rounded shadow-lg animate-fade-in-out">
+          {errorMessage}
         </div>
       )}
     </div>
