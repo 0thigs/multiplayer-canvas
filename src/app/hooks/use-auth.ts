@@ -37,7 +37,14 @@ const useAuth = () => {
     }
   };
 
-  return { login, register, logout, error };
+  const getUserToken = async () => {
+    // Aqui você precisa garantir que o token esteja no cookie ou localStorage
+    // Exemplo:
+    const token = document.cookie.split('; ').find(row => row.startsWith('sb-access-token='))?.split('=')[1];
+    return token;
+  };
+
+  return { login, register, logout, error, getUserToken };
 };
 
 export default useAuth;

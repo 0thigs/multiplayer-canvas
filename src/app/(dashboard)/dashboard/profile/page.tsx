@@ -12,9 +12,12 @@ import Link from "next/link";
 import { ArrowLeftIcon } from "lucide-react";
 
 export default function ProfilePage() {
-  const { logout } = useAuth();
+  const { logout, getUserToken } = useAuth(); // Garantir que o token seja obtido
   const [userName, setUserName] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -24,9 +27,9 @@ export default function ProfilePage() {
         });
         const data = await response.json();
         if (data.user) {
-          console.log(data.user);
           setUserName(data.user.user_metadata.name);
           setEmail(data.user.email);
+          setUserId(data.user.id);
         }
       } catch (error) {
         console.error("Erro ao buscar usuário:", error);
@@ -35,9 +38,44 @@ export default function ProfilePage() {
     fetchUser();
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!userId || !userName || !email) {
+      setMessage("Todos os campos são obrigatórios.");
+      return;
+    }
+  
+    const token = await getUserToken(); // Obtenha o token de autenticação
+  
+    if (!token) {
+      setMessage("Token de autenticação ausente");
+      return;
+    }
+  
+    try {
+      const response = await fetch("/api/user/update", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Envie o token corretamente
+        },
+        body: JSON.stringify({ userId, name: userName, email }),
+      });
+  
+      const data = await response.json();
+      console.log("API Response:", data); // Verifique a resposta da API
+  
+      if (response.ok) {
+        setMessage("Perfil atualizado com sucesso.");
+      } else {
+        setMessage(data.message || "Erro ao atualizar perfil.");
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar perfil:", error);
+      setMessage("Erro ao atualizar perfil.");
+    }
   };
+  
 
   return (
     <div>
@@ -86,6 +124,7 @@ export default function ProfilePage() {
               </Button>
             </div>
           </form>
+          {message && <p>{message}</p>}
         </Card>
       </main>
     </div>

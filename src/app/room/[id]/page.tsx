@@ -155,15 +155,6 @@ export default function RoomPage({ params }: RoomPageProps) {
     fetchCanvasState();
   }, [roomId]);
 
-  // Autosave a cada 60 segundos
-  useEffect(() => {
-    const interval = setInterval(() => {
-      saveCanvasState();
-    }, 60000); // 60.000 ms = 60 segundos
-
-    return () => clearInterval(interval);
-  }, [saveCanvasState]);
-
   const download = () => {
     const canvas = document.getElementById("canvas") as HTMLCanvasElement;
     if (!canvas) {
