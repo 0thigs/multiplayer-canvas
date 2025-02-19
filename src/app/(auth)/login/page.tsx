@@ -1,12 +1,12 @@
 "use client";
 
-import { Button } from "components/ui/button";
-import { Card } from "components/ui/card";
-import { Input } from "components/ui/input";
-import { Label } from "components/ui/label";
+import { Button } from "@/app/components/ui/button";
+import { Card } from "@/app/components/ui/card";
+import { Input } from "@/app/components/ui/input";
+import { Label } from "@/app/components/ui/label";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import useAuth from "@/app/hooks/use-auth";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 
@@ -18,6 +18,15 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+
+  useEffect(() => {
+    const storedEmail = localStorage.getItem("rememberedEmail");
+    if (storedEmail) {
+      setEmail(storedEmail);
+      setRememberMe(true);
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,6 +37,11 @@ export default function LoginPage() {
 
     if (!error) {
       setIsSuccess(true);
+      if (rememberMe) {
+        localStorage.setItem("rememberedEmail", email);
+      } else {
+        localStorage.removeItem("rememberedEmail");
+      }
     }
   };
 
@@ -56,7 +70,9 @@ export default function LoginPage() {
                 type="email"
                 placeholder="Enter your email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setEmail(e.target.value)
+                }
                 required
               />
             </div>
@@ -69,7 +85,9 @@ export default function LoginPage() {
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setPassword(e.target.value)
+                  }
                   required
                 />
                 {showPassword ? (
@@ -84,6 +102,27 @@ export default function LoginPage() {
                   />
                 )}
               </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="rememberMe"
+                  checked={rememberMe}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setRememberMe(e.target.checked)
+                  }
+                  className="mr-2"
+                />
+                <Label htmlFor="rememberMe">Remember me</Label>
+              </div>
+              <Link
+                href="/forgot-password"
+                className="text-sm text-primary hover:underline"
+              >
+                Forgot Password?
+              </Link>
             </div>
 
             <Button type="submit" className="w-full" disabled={isLoading}>
