@@ -7,6 +7,7 @@ export async function POST(request: Request) {
     const authService = new AuthService();
     const response = await authService.login(email, password, request, new Response());
 
+    console.log("response", response);
     return response;
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 400 });
