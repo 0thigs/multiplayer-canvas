@@ -1,8 +1,9 @@
-import { supabase } from '../supabase-client';
+import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
 export default class AuthService {
   async login(email: string, password: string, req: Request, res: Response) {
+    const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -23,6 +24,7 @@ export default class AuthService {
   }
 
   async register(name: string, email: string, password: string, req: Request, res: Response) {
+    const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -49,6 +51,7 @@ export default class AuthService {
   }
 
   async logout(req: Request, res: Response) {
+    const supabase = await createSupabaseServerClient();
     const { error } = await supabase.auth.signOut();
 
     if (error) {
@@ -62,6 +65,7 @@ export default class AuthService {
   }
 
   async getUser(token?: string) {
+    const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase.auth.getUser(token);
 
     if (error) {
@@ -73,6 +77,7 @@ export default class AuthService {
   }
 
   async isLoggedIn(token?: string) {
+    const supabase = await createSupabaseServerClient();
     try {
       const { data, error } = await supabase.auth.getUser(token);
 
